@@ -9,8 +9,9 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis"
-	"github.com/sirupsen/logrus"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"os"
 	"time"
 
@@ -54,6 +55,8 @@ func RedisInitializer(uri, password string) func(db int) *redis.Client {
 }
 
 func main() {
+	godotenv.Load()
+
 	logrus.SetLevel(logrus.DebugLevel)
 	// Comment out the next line for performance gain
 	logrus.SetReportCaller(true)
@@ -67,13 +70,16 @@ func main() {
 	defer close()
 
 	rdbUri := os.Getenv("RDB_URI")
-	redis := RedisInitializer(rdbUri, os.Getenv("RDB_PASSWORD"))
+	redis := RedisInitializer(rdbUri, "")
 
 	env := &common.Env{
-		AuthService:      &services.AuthService{Collection: mdb.Collection("users")},
-		MessagingService: &services.MessagingService{Collection: mdb.Collection("messages")},
-		UserService:      &services.UserService{Collection: mdb.Collection("users")},
-		SessionService:   &services.SessionService{Store: redis(0)},
+		AuthService:    &services.AuthService{Collection: mdb.Collection("users")},
+		UserService:    &services.UserService{Collection: mdb.Collection("users")},
+		SessionService: &services.SessionService{Store: redis(0)},
+	}
+	env.MessagingService = &services.MessagingService{
+		Collection:  mdb.Collection("messages"),
+		UserService: env.UserService,
 	}
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {

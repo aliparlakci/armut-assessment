@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func Signin(authenticator services.Authenticator, sessions services.SessionCreator) gin.HandlerFunc {
+func Signin(authenticator services.Authenticator, sessions services.SessionCreator, activityLogger services.ActivityLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := common.LoggerWithRequestId(c.Copy())
 
@@ -33,7 +33,9 @@ func Signin(authenticator services.Authenticator, sessions services.SessionCreat
 		}
 
 		if !success {
-			// TODO keep track of activity logs
+			if err := activityLogger.LogUnsuccesfulSignin(c.Copy(), creds.Username, c.ClientIP()); err != nil {
+				logger.Errorf("ActivityLogger.LogUnsuccesfulSignin() raised an error: %v", err.Error())
+			}
 			c.JSON(http.StatusBadRequest, gin.H{"error": "username and password mismatch"})
 			return
 		}
@@ -45,6 +47,10 @@ func Signin(authenticator services.Authenticator, sessions services.SessionCreat
 			return
 		}
 
+		if err := activityLogger.LogSignin(c.Copy(), creds.Username, c.ClientIP()); err != nil {
+			logger.Errorf("ActivityLogger.LogSignin() raised an error: %v", err.Error())
+		}
+
 		logger.WithFields(logrus.Fields{"username": creds.Username, "sessionId": sessionId}).Infof("user with username logged in on the session with sessionID")
 		c.SetCookie("session", sessionId, 7776000, "/", "localhost", false, false)
 		c.JSON(http.StatusOK, gin.H{"result": "logged in"})
@@ -52,19 +58,21 @@ func Signin(authenticator services.Authenticator, sessions services.SessionCreat
 	}
 }
 
-func Signout(revoker services.SessionRevoker) gin.HandlerFunc {
+func Signout(revoker services.SessionRevoker, activityLogger services.ActivityLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := common.LoggerWithRequestId(c.Copy())
 
-		if _, isLoggedIn := c.Get("user"); !isLoggedIn {
-			//logger.WithField("user_id", user.(models.User).ID).Debug("user with user_id is already logged in on this session")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "user is already logged out"})
+		var user models.User
+		if u, isLoggedIn := c.Get("user"); !isLoggedIn {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no one is signed in"})
 			return
+		} else {
+			user = u.(models.User)
 		}
 
 		sessionId, err := c.Cookie("session")
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "user is already logged out"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no one is signed in"})
 			return
 		}
 
@@ -73,7 +81,11 @@ func Signout(revoker services.SessionRevoker) gin.HandlerFunc {
 			return
 		}
 
-		logger.WithField("sessionId", sessionId).Infof("user logged out from session with sessionId")
+		if err := activityLogger.LogSignout(c.Copy(), user.Username, c.ClientIP()); err != nil {
+			logger.Errorf("ActivityLogger.LogSignout() raised an error: %v", err.Error())
+		}
+
+		logger.WithField("sessionId", sessionId).Infof("user signed out from session with sessionId")
 		c.Header("Set-Cookie", fmt.Sprintf("session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;"))
 		c.String(http.StatusOK, "")
 	}

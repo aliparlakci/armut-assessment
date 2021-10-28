@@ -95,7 +95,7 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 		}
 
 		if _, err := sender.SendMessage(c.Copy(), message.Body, user.Username, message.To); err == services.ErrNoUser {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{"result": "user does not exist"})
 			return
 		} else if err != nil {
 			logger.Errorf("services.MessageSender.SendMessage() raised an error: %v", err.Error())

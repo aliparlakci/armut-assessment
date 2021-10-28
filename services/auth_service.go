@@ -21,7 +21,9 @@ func (a *AuthService) Authenticate(c context.Context, username, password string)
 	result := a.Collection.FindOne(c, bson.M{"username": username})
 
 	var user models.User
-	if err := result.Err(); err != nil 	{
+	if err := result.Err(); err == mongo.ErrNoDocuments {
+		return false, nil
+	} else if err != nil{
 		return false, fmt.Errorf("mongodb driver raised an error while fetching the user: %v", err.Error())
 	}
 

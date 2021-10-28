@@ -6,15 +6,15 @@ import (
 )
 
 type Message struct {
-	ID     primitive.ObjectID `bson:"_id,omitempty"`
-	To     string             `bson:"to"`
-	From   string             `bson:"from"`
-	Body   string             `bson:"body"`
-	SendAt time.Time          `bson:"send_at"`
-	IsRead bool               `bson:"is_read"`
+	ID     primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	To     string             `bson:"to" json:"to"`
+	From   string             `bson:"from" json:"from"`
+	Body   string             `bson:"body" json:"body"`
+	SendAt time.Time          `bson:"send_at" json:"send_at"`
+	IsRead bool               `bson:"is_read" json:"is_read"`
 }
 
 type NewMessage struct {
-	To   string `form:"to"`
-	Body string `form:"body"`
+	To   string `form:"to" binding:"required"`
+	Body string `form:"body" binding:"required"`
 }

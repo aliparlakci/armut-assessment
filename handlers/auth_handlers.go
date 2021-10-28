@@ -58,6 +58,22 @@ func Signin(authenticator services.Authenticator, sessions services.SessionCreat
 	}
 }
 
+func Me() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var user models.User
+		if u, isLoggedIn := c.Get("user"); !isLoggedIn {
+			c.String(http.StatusUnauthorized, "")
+			return
+		} else {
+			user = u.(models.User)
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"username": user.Username,
+		})
+	}
+}
+
 func Signout(revoker services.SessionRevoker, activityLogger services.ActivityLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := common.LoggerWithRequestId(c.Copy())

@@ -3,12 +3,10 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/aliparlakci/armut-backend-assessment/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -52,12 +50,7 @@ func (u *UserService) CreateUser(c context.Context, username, password string) (
 		return "", ErrUserAlreadyExists
 	}
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	if err != nil {
-		return "", fmt.Errorf("cannot hash the password: %v", err.Error())
-	}
-
-	result, err := u.Collection.InsertOne(c, models.User{Username: username, Password: string(bytes)})
+	result, err := u.Collection.InsertOne(c, models.User{Username: username, Password: password})
 	return result.InsertedID.(primitive.ObjectID).String(), err
 }
 

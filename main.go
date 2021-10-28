@@ -56,11 +56,15 @@ func main() {
 		api.GET("/messages/new", middlewares.Protected(handlers.GetNewMessages(env.MessagingService)))
 		api.GET("/messages/check", middlewares.Protected(handlers.CheckNewMessages(env.MessagingService)))
 		api.POST("/messages/send", middlewares.Protected(handlers.SendMessage(env.MessagingService)))
+		api.PUT("/messages/:id/read", middlewares.Protected(handlers.ReadMessage(env.MessagingService)))
+		api.PUT("/messages/user/:username/read", middlewares.Protected(handlers.ReadMessages(env.MessagingService)))
 
-		api.POST("/signup", handlers.Signup(env.UserService, env.UserService))
+		api.POST("/signup", handlers.Signup(env.UserService, env.AuthService))
 
 		api.POST("/signin", handlers.Signin(env.AuthService, env.SessionService, env.ActivityService))
 		api.POST("/signout", middlewares.Protected(handlers.Signout(env.SessionService, env.ActivityService)))
+
+		api.GET("/me", handlers.Me())
 
 		api.GET("/activity", middlewares.Protected(handlers.GetActivities(env.ActivityService)))
 	}

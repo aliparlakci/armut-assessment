@@ -75,6 +75,7 @@ func CheckNewMessages(getter services.MessageGetter) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"result": count})
 	}
 }
+
 func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logger := common.LoggerWithRequestId(c.Copy())
@@ -89,7 +90,6 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 
 		var message models.NewMessage
 		if err := c.Bind(&message); err != nil {
-			// TODO: logging
 			c.String(http.StatusBadRequest, "")
 			return
 		}
@@ -104,5 +104,62 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 		}
 
 		c.String(http.StatusCreated, "")
+	}
+}
+
+func ReadMessage(reader services.MessageReader) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := common.LoggerWithRequestId(c)
+		var user models.User
+
+		if u, exists := c.Get("user"); !exists {
+			c.String(http.StatusUnauthorized, "")
+			return
+		} else {
+			user = u.(models.User)
+		}
+
+		messageId := c.Param("id")
+		if messageId == "" {
+			c.String(http.StatusBadRequest, "")
+			return
+		}
+
+		if err := reader.ReadMessage(messageId, user.Username); err != nil {
+			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
+			c.String(http.StatusInternalServerError, "")
+			return
+		}
+
+		c.String(http.StatusOK, "")
+	}
+}
+
+
+func ReadMessages(reader services.MessageReader) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		logger := common.LoggerWithRequestId(c)
+		var user models.User
+
+		if u, exists := c.Get("user"); !exists {
+			c.String(http.StatusUnauthorized, "")
+			return
+		} else {
+			user = u.(models.User)
+		}
+
+		senderUsername := c.Param("username")
+		if senderUsername == "" {
+			c.String(http.StatusBadRequest, "")
+			return
+		}
+
+		if err := reader.ReadMessagesFromUser(user.Username, senderUsername); err != nil {
+			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
+			c.String(http.StatusInternalServerError, "")
+			return
+		}
+
+		c.String(http.StatusOK, "")
 	}
 }

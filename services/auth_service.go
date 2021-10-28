@@ -17,6 +17,10 @@ type Authenticator interface {
 	Authenticate(c context.Context, username, password string) (bool, error)
 }
 
+type PasswordHasher interface {
+	HashPassword(password string) (string, error)
+}
+
 func (a *AuthService) Authenticate(c context.Context, username, password string) (bool, error) {
 	result := a.Collection.FindOne(c, bson.M{"username": username})
 
@@ -33,4 +37,13 @@ func (a *AuthService) Authenticate(c context.Context, username, password string)
 
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return err == nil, nil
+}
+
+func (a AuthService) HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		return "", fmt.Errorf("cannot hash the password: %v", err.Error())
+	}
+
+	return string(bytes), nil
 }

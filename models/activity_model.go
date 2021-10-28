@@ -6,9 +6,9 @@ import (
 )
 
 type Activity struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Event    string             `bson:"event"`
-	Username string             `bson:"username"`
-	IP       string             `bson:"ip"`
-	When     time.Time          `bson:"when"`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Event    string             `bson:"event" json:"event"`
+	Username string             `bson:"username" json:"username"`
+	IP       string             `bson:"ip" json:"ip"`
+	When     time.Time          `bson:"when" json:"when"`
 }

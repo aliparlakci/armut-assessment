@@ -1,5 +1,7 @@
 package services
 
+//go:generate mockgen -destination=../mocks/mock_messaging_service.go -package=mocks github.com/aliparlakci/armut-backend-assessment/services MessageSender,MessageReader,MessageGetter
+
 import (
 	"context"
 	"fmt"
@@ -27,7 +29,8 @@ type MessageGetter interface {
 }
 
 type MessageReader interface {
-	ReadMessage(id string) error
+	ReadMessage(id, username string) error
+	ReadMessagesFromUser(receiver, sender string) error
 }
 
 func (m *MessagingService) GetAllMessages(c context.Context, username string) ([]models.Message, error) {
@@ -110,4 +113,14 @@ func (m *MessagingService) SendMessage(c context.Context, body, sender, receiver
 	} else {
 		return result.InsertedID.(primitive.ObjectID).String(), nil
 	}
+}
+
+func (m *MessagingService) ReadMessagesFromUser(receiver, sender string) error {
+	// TODO Implement
+	return nil
+}
+
+func (m *MessagingService) ReadMessage(id string) error {
+	// TODO Implement
+	return nil
 }

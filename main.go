@@ -56,8 +56,8 @@ func main() {
 		api.GET("/messages/new", middlewares.Protected(handlers.GetNewMessages(env.MessagingService)))
 		api.GET("/messages/check", middlewares.Protected(handlers.CheckNewMessages(env.MessagingService)))
 		api.POST("/messages/send", middlewares.Protected(handlers.SendMessage(env.MessagingService)))
-		api.PUT("/messages/:id/read", middlewares.Protected(handlers.ReadMessage(env.MessagingService)))
-		api.PUT("/messages/user/:username/read", middlewares.Protected(handlers.ReadMessages(env.MessagingService)))
+		api.PUT("/messages/read/:id", middlewares.Protected(handlers.ReadMessage(env.MessagingService)))
+		api.PUT("/messages/user/read/:username/", middlewares.Protected(handlers.ReadMessages(env.MessagingService)))
 
 		api.POST("/signup", handlers.Signup(env.UserService, env.AuthService))
 

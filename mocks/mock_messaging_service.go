@@ -74,17 +74,31 @@ func (m *MockMessageReader) EXPECT() *MockMessageReaderMockRecorder {
 }
 
 // ReadMessage mocks base method.
-func (m *MockMessageReader) ReadMessage(arg0 string) error {
+func (m *MockMessageReader) ReadMessage(arg0, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ReadMessage", arg0)
+	ret := m.ctrl.Call(m, "ReadMessage", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ReadMessage indicates an expected call of ReadMessage.
-func (mr *MockMessageReaderMockRecorder) ReadMessage(arg0 interface{}) *gomock.Call {
+func (mr *MockMessageReaderMockRecorder) ReadMessage(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMessage", reflect.TypeOf((*MockMessageReader)(nil).ReadMessage), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMessage", reflect.TypeOf((*MockMessageReader)(nil).ReadMessage), arg0, arg1)
+}
+
+// ReadMessagesFromUser mocks base method.
+func (m *MockMessageReader) ReadMessagesFromUser(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadMessagesFromUser", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ReadMessagesFromUser indicates an expected call of ReadMessagesFromUser.
+func (mr *MockMessageReaderMockRecorder) ReadMessagesFromUser(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadMessagesFromUser", reflect.TypeOf((*MockMessageReader)(nil).ReadMessagesFromUser), arg0, arg1)
 }
 
 // MockMessageGetter is a mock of MessageGetter interface.

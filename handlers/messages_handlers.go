@@ -125,7 +125,7 @@ func ReadMessage(reader services.MessageReader) gin.HandlerFunc {
 			return
 		}
 
-		if err := reader.ReadMessage(messageId, user.Username); err != nil {
+		if err := reader.ReadMessage(c.Copy(), messageId, user.Username); err != nil {
 			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
 			c.String(http.StatusInternalServerError, "")
 			return
@@ -154,7 +154,7 @@ func ReadMessages(reader services.MessageReader) gin.HandlerFunc {
 			return
 		}
 
-		if err := reader.ReadMessagesFromUser(user.Username, senderUsername); err != nil {
+		if err := reader.ReadMessagesFromUser(c.Copy(), user.Username, senderUsername); err != nil {
 			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
 			c.String(http.StatusInternalServerError, "")
 			return

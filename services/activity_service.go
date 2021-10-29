@@ -1,5 +1,7 @@
 package services
 
+//go:generate mockgen -destination=../mocks/mock_activity_service.go -package=mocks github.com/aliparlakci/armut-backend-assessment/services ActivityLogger,ActivityFetcher
+
 import (
 	"context"
 	"fmt"

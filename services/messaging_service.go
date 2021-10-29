@@ -29,8 +29,8 @@ type MessageGetter interface {
 }
 
 type MessageReader interface {
-	ReadMessage(id, username string) error
-	ReadMessagesFromUser(receiver, sender string) error
+	ReadMessage(c context.Context, id, username string) error
+	ReadMessagesFromUser(c context.Context, receiver, sender string) error
 }
 
 func (m *MessagingService) GetAllMessages(c context.Context, username string) ([]models.Message, error) {
@@ -115,12 +115,31 @@ func (m *MessagingService) SendMessage(c context.Context, body, sender, receiver
 	}
 }
 
-func (m *MessagingService) ReadMessagesFromUser(receiver, sender string) error {
-	// TODO Implement
-	return nil
+func (m *MessagingService) ReadMessage(c context.Context, id, receiver string) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return fmt.Errorf("cannot convert id to ObjectID: %v", err.Error())
+	}
+
+	_, err = m.Collection.UpdateMany(
+		c,
+		bson.M{"_id": objID, "to": receiver},
+		bson.D{
+			{"$set", bson.D{{"is_read", true}}},
+		},
+	)
+
+	return err
 }
 
-func (m *MessagingService) ReadMessage(id string) error {
-	// TODO Implement
-	return nil
+func (m *MessagingService) ReadMessagesFromUser(c context.Context, receiver, sender string) error {
+	_, err := m.Collection.UpdateMany(
+		c,
+		bson.M{"from": sender, "to": receiver},
+		bson.D{
+			{"$set", bson.D{{"is_read", true}}},
+		},
+	)
+
+	return err
 }

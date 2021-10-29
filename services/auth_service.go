@@ -1,5 +1,7 @@
 package services
 
+//go:generate mockgen -destination=../mocks/mock_auth_service.go -package=mocks github.com/aliparlakci/armut-backend-assessment/services Authenticator,PasswordHasher
+
 import (
 	"context"
 	"fmt"

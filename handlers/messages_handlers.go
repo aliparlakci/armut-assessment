@@ -23,7 +23,7 @@ func GetAllMessages(getter services.MessageGetter) gin.HandlerFunc {
 		messages, err := getter.GetAllMessages(c.Copy(), user.Username)
 		if err != nil {
 			logger.Errorf("services.MessageGetter.GetAllMessages() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
@@ -46,7 +46,7 @@ func GetNewMessages(getter services.MessageGetter) gin.HandlerFunc {
 		messages, err := getter.GetNewMessages(c.Copy(), user.Username)
 		if err != nil {
 			logger.Errorf("services.MessageGetter.GetNewMessages() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
@@ -69,7 +69,7 @@ func CheckNewMessages(getter services.MessageGetter) gin.HandlerFunc {
 		count, err := getter.CheckNewMessages(c.Copy(), user.Username)
 		if err != nil {
 			logger.Errorf("services.MessageGetter.CheckNewMessages() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"result": count})
@@ -90,7 +90,7 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 
 		var message models.NewMessage
 		if err := c.Bind(&message); err != nil {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{})
 			return
 		}
 
@@ -99,11 +99,11 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 			return
 		} else if err != nil {
 			logger.Errorf("services.MessageSender.SendMessage() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
-		c.String(http.StatusCreated, "")
+		c.JSON(http.StatusCreated, gin.H{"result": "message is successfully sent"})
 	}
 }
 

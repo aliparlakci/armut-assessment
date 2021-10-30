@@ -14,14 +14,14 @@ func Signup(usersCreator services.UserCreator, hasher services.PasswordHasher) g
 
 		var creds models.AuthForm
 		if err := c.Bind(&creds); err != nil {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{})
 			return
 		}
 
 		hashedPassword, err := hasher.HashPassword(creds.Password)
 		if err != nil {
 			logger.Errorf("cannot hash the password: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
@@ -32,7 +32,7 @@ func Signup(usersCreator services.UserCreator, hasher services.PasswordHasher) g
 		}
 		if err != nil {
 			logger.WithField("username", creds.Username).Errorf("UserService.CreateUser() raised an error while creating user with username: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 

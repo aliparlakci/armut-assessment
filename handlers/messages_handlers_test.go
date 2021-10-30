@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+// These test cases does not cover "Unauthorized" requests (i.e. requests without a proper session cookie)
+// because authorization check is handled in Protected Middleware
+
 func TestGetAllMessages(t *testing.T) {
 	tests := []struct {
 		Prepare      func(getter *mocks.MockMessageGetter)
@@ -82,7 +85,7 @@ func TestGetAllMessages(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			if bodyAssertion, err := common.IsBodyEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
 				t.Fatal(err)
 			} else if !bodyAssertion {
 				t.Errorf("response bodies don't match")
@@ -160,7 +163,7 @@ func TestGetNewMessages(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			if bodyAssertion, err := common.IsBodyEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
 				t.Fatal(err)
 			} else if !bodyAssertion {
 				t.Errorf("response bodies don't match")
@@ -220,7 +223,7 @@ func TestCheckNewMessages(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			if bodyAssertion, err := common.IsBodyEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
 				t.Fatal(err)
 			} else if !bodyAssertion {
 				t.Errorf("response bodies don't match")
@@ -331,7 +334,133 @@ func TestSendMessage(t *testing.T) {
 
 			r.ServeHTTP(recorder, request)
 
-			if bodyAssertion, err := common.IsBodyEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+				t.Fatal(err)
+			} else if !bodyAssertion {
+				t.Errorf("response bodies don't match")
+			}
+
+			if recorder.Result().StatusCode != tt.ExpectedCode {
+				t.Errorf("want %v, got %v", tt.ExpectedCode, recorder.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestReadMessage(t *testing.T) {
+	tests := []struct {
+		Endpoint     string
+		Prepare      func(reader *mocks.MockMessageReader)
+		ExpectedCode int
+		ExpectedBody gin.H
+	}{
+		{
+			Endpoint: "/api/messages/read/123456",
+			Prepare: func(reader *mocks.MockMessageReader) {
+				reader.EXPECT().ReadMessage(gomock.Any(), "123456", "johndoe").Return(nil).MinTimes(1)
+			},
+			ExpectedCode: http.StatusOK,
+			ExpectedBody: gin.H{},
+		}, {
+			Endpoint: "/api/messages/read/",
+			Prepare: func(reader *mocks.MockMessageReader) {
+				reader.EXPECT().ReadMessage(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(0)
+			},
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: gin.H{},
+		},
+	}
+
+	for i, tt := range tests {
+		testName := fmt.Sprintf("[%v]", i)
+		t.Run(testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockedMessageReader := mocks.NewMockMessageReader(ctrl)
+
+			if tt.Prepare != nil {
+				tt.Prepare(mockedMessageReader)
+			}
+
+			recorder := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(recorder)
+			r.Use(func(c *gin.Context) {
+				c.Set("user", models.User{Username: "johndoe"})
+			})
+			r.PUT("/api/messages/read/:id", ReadMessage(mockedMessageReader))
+
+			request, err := http.NewRequest(http.MethodPut, tt.Endpoint, nil)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			r.ServeHTTP(recorder, request)
+
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
+				t.Fatal(err)
+			} else if !bodyAssertion {
+				t.Errorf("response bodies don't match")
+			}
+
+			if recorder.Result().StatusCode != tt.ExpectedCode {
+				t.Errorf("want %v, got %v", tt.ExpectedCode, recorder.Result().StatusCode)
+			}
+		})
+	}
+}
+
+func TestReadMessages(t *testing.T) {
+	tests := []struct {
+		Endpoint     string
+		Prepare      func(reader *mocks.MockMessageReader)
+		ExpectedCode int
+		ExpectedBody gin.H
+	}{
+		{
+			Endpoint: "/api/messages/user/ali",
+			Prepare: func(reader *mocks.MockMessageReader) {
+				reader.EXPECT().ReadMessagesFromUser(gomock.Any(), "ali", "johndoe").Return(nil).MinTimes(1)
+			},
+			ExpectedCode: http.StatusOK,
+			ExpectedBody: gin.H{},
+		}, {
+			Endpoint: "/api/messages/user/",
+			Prepare: func(reader *mocks.MockMessageReader) {
+				reader.EXPECT().ReadMessagesFromUser(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(0)
+			},
+			ExpectedCode: http.StatusBadRequest,
+			ExpectedBody: gin.H{},
+		},
+	}
+
+	for i, tt := range tests {
+		testName := fmt.Sprintf("[%v]", i)
+		t.Run(testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			mockedMessageReader := mocks.NewMockMessageReader(ctrl)
+
+			if tt.Prepare != nil {
+				tt.Prepare(mockedMessageReader)
+			}
+
+			recorder := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(recorder)
+			r.Use(func(c *gin.Context) {
+				c.Set("user", models.User{Username: "johndoe"})
+			})
+			r.PUT("/api/messages/user/:username", ReadMessages(mockedMessageReader))
+
+			request, err := http.NewRequest(http.MethodPut, tt.Endpoint, nil)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			r.ServeHTTP(recorder, request)
+
+			if bodyAssertion, err := common.AreBodiesEqual(tt.ExpectedBody, recorder.Result().Body); err != nil {
 				t.Fatal(err)
 			} else if !bodyAssertion {
 				t.Errorf("response bodies don't match")

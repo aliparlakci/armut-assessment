@@ -27,7 +27,7 @@ func BodyReader(reader io.Reader) ([]byte, error) {
 	return rawBody, nil
 }
 
-func IsBodyEqual(expected gin.H, actual io.Reader) (bool, error) {
+func AreBodiesEqual(expected gin.H, actual io.Reader) (bool, error) {
 	actualBytes, err := BodyReader(actual)
 	if err != nil {
 		return false, err

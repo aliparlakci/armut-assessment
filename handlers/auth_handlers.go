@@ -28,7 +28,7 @@ func Signin(authenticator services.Authenticator, sessions services.SessionCreat
 		success, err := authenticator.Authenticate(c.Copy(), creds.Username, creds.Password)
 		if err != nil {
 			logger.Errorf("Authenticator.Authenticate() raised an error while logging in the user with username: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
@@ -62,7 +62,7 @@ func Me() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user models.User
 		if u, isLoggedIn := c.Get("user"); !isLoggedIn {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -93,7 +93,7 @@ func Signout(revoker services.SessionRevoker, activityLogger services.ActivityLo
 		}
 
 		if err := revoker.RevokeSession(c.Copy(), sessionId); err != nil {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{})
 			return
 		}
 
@@ -103,6 +103,6 @@ func Signout(revoker services.SessionRevoker, activityLogger services.ActivityLo
 
 		logger.WithField("sessionId", sessionId).Infof("user signed out from session with sessionId")
 		c.Header("Set-Cookie", fmt.Sprintf("session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;"))
-		c.String(http.StatusOK, "")
+		c.JSON(http.StatusOK, gin.H{})
 	}
 }

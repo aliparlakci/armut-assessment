@@ -132,7 +132,7 @@ func (m *MessagingService) ReadMessage(c context.Context, id, receiver string) e
 	return err
 }
 
-func (m *MessagingService) ReadMessagesFromUser(c context.Context, receiver, sender string) error {
+func (m *MessagingService) ReadMessagesFromUser(c context.Context, sender, receiver string) error {
 	_, err := m.Collection.UpdateMany(
 		c,
 		bson.M{"from": sender, "to": receiver},

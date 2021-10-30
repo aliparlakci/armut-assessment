@@ -5,7 +5,7 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +18,7 @@ type SessionFetcher interface {
 }
 
 type SessionCreator interface {
-	CreateSession(c context.Context, userId string) (string, error)
+	CreateSession(c context.Context, data string) (string, error)
 }
 
 type SessionRevoker interface {
@@ -26,20 +26,22 @@ type SessionRevoker interface {
 }
 
 func (s *SessionService) FetchSession(c context.Context, sessionId string) (string, error) {
-	session, err := s.Store.Get(sessionId).Result()
-	if err != nil {
-		return session, fmt.Errorf("session does not exist [sessionId=%v]", sessionId)
+	session, err := s.Store.Get(c, sessionId).Result()
+	if err == redis.Nil {
+		return session, ErrNoSession
+	} else if err != nil {
+		return session, err
 	}
 	return session, nil
 }
 
-func (s *SessionService) CreateSession(c context.Context, userId string) (string, error) {
+func (s *SessionService) CreateSession(c context.Context, data string) (string, error) {
 	id, err := uuid.NewUUID()
 	if err != nil {
 		return "", fmt.Errorf("cannot create new uuid: %v", err.Error())
 	}
 	// TODO: Set expiration
-	if err := s.Store.Set(id.String(), userId, 0).Err(); err != nil {
+	if err := s.Store.Set(c, id.String(), data, 0).Err(); err != nil {
 		return "", fmt.Errorf("cannot create a new session: %v", err.Error())
 	}
 
@@ -47,5 +49,7 @@ func (s *SessionService) CreateSession(c context.Context, userId string) (string
 }
 
 func (s *SessionService) RevokeSession(c context.Context, sessionId string) error {
-	return s.Store.Del(sessionId).Err()
+	return s.Store.Del(c, sessionId).Err()
 }
+
+var ErrNoSession error = fmt.Errorf("session does not exist")

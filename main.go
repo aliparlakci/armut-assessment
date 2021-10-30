@@ -52,6 +52,9 @@ func main() {
 
 	api := router.Group("/api")
 	{
+		// Route registrations can be moved to a separate function(s)
+		// but this way, it is easier to understand the api, in my opinion.
+
 		api.GET("/messages", middlewares.Protected(handlers.GetAllMessages(env.MessagingService)))
 		api.GET("/messages/new", middlewares.Protected(handlers.GetNewMessages(env.MessagingService)))
 		api.GET("/messages/check", middlewares.Protected(handlers.CheckNewMessages(env.MessagingService)))

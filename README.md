@@ -9,9 +9,15 @@ $ docker-compose up -d
 
 ## Notes
 
-**Cache control** headers are missing in the project. They can be implemented to have more control over the content and bandwidth optimization.
+Due to the limited time and school work, there are some left out areas in the project:
 
-# API Reference
+Unit tests do not cover the entire project. However, there test suites in some modules for demonstration. 
+  
+Due to the lack of interfaces in mongo driver, it is very difficult to mock it for testing. Therefore, to be able to test functions, *.e.g. messaging_service.go*, which utilizes mongodb types, calls to mongo driver must be abstracted. For the sake of simplicity, there is no such layer at the moment, but it will most likely be needed in the future.
+
+Cache control headers are missing in the project. They can be implemented to have more control over the content and bandwidth optimization.
+
+Currently, error responses are written in handlers. Error handling can be extracted to a middleware for better code structure.
 
 ## Models
 

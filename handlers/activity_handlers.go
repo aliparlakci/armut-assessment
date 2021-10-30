@@ -14,7 +14,7 @@ func GetActivities(fetcher services.ActivityFetcher) gin.HandlerFunc {
 
 		var user models.User
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -23,7 +23,7 @@ func GetActivities(fetcher services.ActivityFetcher) gin.HandlerFunc {
 		activities, err := fetcher.Fetch(c.Copy(), user.Username)
 		if err != nil {
 			logger.Errorf("ActivityFetcher.Fetch() raised an error while fetching activity of %v: %v", user.Username, err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 

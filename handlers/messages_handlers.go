@@ -14,7 +14,7 @@ func GetAllMessages(getter services.MessageGetter) gin.HandlerFunc {
 
 		var user models.User
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -37,7 +37,7 @@ func GetNewMessages(getter services.MessageGetter) gin.HandlerFunc {
 
 		var user models.User
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -60,7 +60,7 @@ func CheckNewMessages(getter services.MessageGetter) gin.HandlerFunc {
 
 		var user models.User
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -82,7 +82,7 @@ func SendMessage(sender services.MessageSender) gin.HandlerFunc {
 
 		var user models.User
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -113,7 +113,7 @@ func ReadMessage(reader services.MessageReader) gin.HandlerFunc {
 		var user models.User
 
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -121,17 +121,17 @@ func ReadMessage(reader services.MessageReader) gin.HandlerFunc {
 
 		messageId := c.Param("id")
 		if messageId == "" {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{})
 			return
 		}
 
 		if err := reader.ReadMessage(c.Copy(), messageId, user.Username); err != nil {
 			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
-		c.String(http.StatusOK, "")
+		c.JSON(http.StatusOK, gin.H{})
 	}
 }
 
@@ -142,7 +142,7 @@ func ReadMessages(reader services.MessageReader) gin.HandlerFunc {
 		var user models.User
 
 		if u, exists := c.Get("user"); !exists {
-			c.String(http.StatusUnauthorized, "")
+			c.JSON(http.StatusUnauthorized, gin.H{})
 			return
 		} else {
 			user = u.(models.User)
@@ -150,16 +150,16 @@ func ReadMessages(reader services.MessageReader) gin.HandlerFunc {
 
 		senderUsername := c.Param("username")
 		if senderUsername == "" {
-			c.String(http.StatusBadRequest, "")
+			c.JSON(http.StatusBadRequest, gin.H{})
 			return
 		}
 
-		if err := reader.ReadMessagesFromUser(c.Copy(), user.Username, senderUsername); err != nil {
+		if err := reader.ReadMessagesFromUser(c.Copy(), senderUsername, user.Username); err != nil {
 			logger.Errorf("MessageReader.ReadMessage() raised an error: %v", err.Error())
-			c.String(http.StatusInternalServerError, "")
+			c.JSON(http.StatusInternalServerError, gin.H{})
 			return
 		}
 
-		c.String(http.StatusOK, "")
+		c.JSON(http.StatusOK, gin.H{})
 	}
 }

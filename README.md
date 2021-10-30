@@ -1,8 +1,15 @@
 # Armut Backend Assessment
 
+## How to run
+```sh
+$ git clone git@github.com:aliparlakci/armut-backend-assessment.git
+$ cd ./armut-backend-assessment
+$ docker-compose up -d 
+```
+
 ## Notes
 
-**Cache control** headers are missing in the project. They can be implemented to have more control over the content and bandwith optimization.
+**Cache control** headers are missing in the project. They can be implemented to have more control over the content and bandwidth optimization.
 
 # API Reference
 
@@ -80,7 +87,7 @@ Creates a new session for the user and sets session id as `session` cookie. `ses
     - **username**
     - **password**
 
-Returns **HTTP 200** if successful. Returns **HTTP 400** if user another user already logged-in or either of the fields are missing or username and password mismatch.
+Returns **HTTP 200** if successful. Returns **HTTP 400** if another user already logged-in or either of the fields are missing or username and password mismatch.
 
 ### POST /api/signout
 Revokes the session of the user and unsets the `session` cookie.

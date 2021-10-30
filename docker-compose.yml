@@ -1,0 +1,24 @@
+version: '3.4'
+services:
+  backend:
+    build: .
+    restart: always
+    ports:
+      - "8080:5000"
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - MDB_URI=mongodb://mongo:27017/
+      - MDB_DBNAME=armut
+      - RDB_URI=redis:6379
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+
+  mongo:
+    image: "mongo"
+    restart: always
+    volumes:
+      - ./mongo-volume:/data/db

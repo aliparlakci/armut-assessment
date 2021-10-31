@@ -1,4 +1,4 @@
-# Armut Backend Assessment
+# Armut Backend Assessment [![Go](https://github.com/aliparlakci/armut-backend-assessment/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/aliparlakci/armut-backend-assessment/actions/workflows/test.yml)
 
 ## How to run
 ```sh

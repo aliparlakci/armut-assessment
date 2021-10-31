@@ -65,7 +65,7 @@ Sends a message to a user. Needs authorization.
   
 Returns **HTTP 201** if successful. Returns **HTTP 400** if either of the fields are missing or provided username does not belong to a user.
   
-### PUT /api/messages/:messageId/read
+### PUT /api/messages/read/:messageId/
 Marks the message with messageId read. Message needs be received by the logged in user. Needs authorization.
 
 Returns **HTTP 200** if successful. Returns **HTTP 400** if messageId is missing or it does not correspond to a message.

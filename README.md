@@ -70,7 +70,7 @@ Marks the message with messageId read. Message needs be received by the logged i
 
 Returns **HTTP 200** if successful. Returns **HTTP 400** if messageId is missing or it does not correspond to a message.
 
-### PUT /api/messages/user/:username/read
+### PUT /api/messages/user/read/:username
 Marks the messages whose sender is the **username**. Message needs be received by the logged-in user. Needs authorization.
 
 Returns **HTTP 200** if successful. Returns **HTTP 400** if username is missing.
